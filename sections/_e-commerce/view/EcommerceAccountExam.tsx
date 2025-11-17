@@ -40,11 +40,23 @@ function EcommerceAccountExam() {
           <Typography variant='h5' sx={{ mb: 3 }}>
             همچنین به موارد زیر توجه کنید:
           </Typography>
-          <Typography variant='body1' sx={{ mb: 3 }}>
-قبل از آزمون از پایدار بودن اینترنت خود مطمئن شوید.<br/>
-هرگونه فیلترشکن، پروکسی یا وی پی ان را قطع کنید.<br/>
-ترجیحا با سیستم کامپیوتر یا لپ تاپ در آزمون شرکت کنید.<br/>
-</Typography>
+          <Typography variant='body1' sx={{ mb: 3, color: 'red', fontWeight: 'bold' }}>
+            <ul
+              style={{
+                direction: 'rtl',
+                textAlign: 'right',
+                listStylePosition: 'inside',
+                paddingRight: '20px',
+                margin: 0
+              }}
+            >
+              <li>حتماً پیش از آغاز آزمون از پایداری اینترنت و عدم قطعی برق اطمینان حاصل کنید.</li>
+              <li>هنگام برگزاری آزمون تنها یک صفحه را باز نگه دارید و از باز بودن سایر صفحات در مرورگر کروم یا در سیستم خود پرهیز نمایید.</li>
+              <li>برای شرکت در آزمون حتماً از رایانه استفاده کنید و از به‌کارگیری تلفن همراه یا تبلت خودداری فرمایید.</li>
+              <li>در زمان آزمون هرگونه فیلترشکن یا VPN را خاموش کنید.</li>
+              <li>ساعت و تاریخ سیستم را نیز بررسی کنید تا به‌درستی تنظیم شده باشد.</li>
+            </ul>
+          </Typography>
         </Col>
         <Col xxs={24} md={6}>
 
@@ -55,6 +67,10 @@ function EcommerceAccountExam() {
       </Row>
       
         <Button className='mt-2' btnType='primary' href="/dashboard/aexam">ورود به سامانه آزمون </Button>
+        <Typography variant="body2" sx={{ mt: 1, textAlign: 'center', color: 'gray' }}>
+          ورود به سامانه آزمون به منزله‌ی پذیرفتن تمامی قوانین و مقررات آزمون نماتک است.
+        </Typography>
+      
         {/* <Button className='mt-2' btnType='primary' href="http://my.namatek.com/" target='_blank'>ورود به سامانه آزمون قدیم</Button>*/}
         {data && data.length ? <>
         <h3 className='mb-1 mt-3'><Iconify
