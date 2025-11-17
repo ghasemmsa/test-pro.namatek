@@ -1,0 +1,93 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "airbnb",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/typescript",
+    "prettier"
+    ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "globals": {
+    "React": true,
+    "JSX": true
+  },
+  "plugins": ["react", "@typescript-eslint", "import"],
+  "settings": {
+    "import/resolver": {
+      "typescript": {
+        "project": "."
+      }
+    }
+  },
+  "rules": {
+    "react/no-unescaped-entities": "off",
+    "react/static-property-placement": "off",
+    "react/state-in-constructor": "off",
+    "react/prop-types": "off",
+    "dot-notation": "off",
+    "camelcase": "off",
+    "@typescript-eslint/camelcase": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "jsx-a11y/control-has-associated-label": "off",
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": "error",
+    "import/no-cycle": "off",
+    "import/prefer-default-export": "off",
+    "import/extensions": "off",
+    "import/no-named-as-default": 0,
+    "import/no-extraneous-dependencies": "off",
+    "no-underscore-dangle": "off",
+    "react/require-default-props": "off",
+    "no-restricted-exports": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "import/no-unresolved": "off",
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-var-requires": 0,
+    "react/button-has-type": "off",
+    "import/no-duplicates": "off",
+    "react/react-in-jsx-scope": 0,
+    "react/no-unstable-nested-components": [
+      "warn",
+      {
+        "allowAsProps": true,
+        "customValidators": [] /* optional array of validators used for propTypes validation */
+      }
+    ],
+    "react/jsx-filename-extension": [
+      2,
+      {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    ],
+    "react/jsx-props-no-spreading": 0,
+    "react/function-component-definition": "off",
+    "no-plusplus": [
+      "error",
+      {
+        "allowForLoopAfterthoughts": true
+      }
+    ]
+  },
+  "ignorePatterns": [
+    "/node_modules/**",
+    "/build/**",
+    "/old/**",
+    "/*/.next/**",
+    "/*/types/**",
+    "/libs/types/*",
+    "/*/node_modules/**",
+    "/current/libs/redux/services/**"
+  ]
+}
