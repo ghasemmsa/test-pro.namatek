@@ -67,7 +67,7 @@ function EcommerceAccountExam() {
       </Row>
       
         <Button className='mt-2' btnType='primary' href="/dashboard/aexam">ورود به سامانه آزمون </Button>
-        <Typography variant="body2" sx={{ mt: 1, textAlign: 'right', color: 'gray' }}>
+        <Typography variant="body2" sx={{ mt: 1, color: 'gray' }}>
           ورود به سامانه آزمون به منزله‌ی پذیرفتن تمامی قوانین و مقررات آزمون نماتک است.
         </Typography>
       
