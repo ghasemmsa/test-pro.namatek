@@ -21,7 +21,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag majidgoodini/majidgoodini:latest
+        run: docker build . --file Dockerfile --tag gha30/pro_namatek_front:latest
 
       - name: Push the Docker image to Docker Hub
-        run: docker push majidgoodini/majidgoodini:latest
+        run: docker push gha30/pro_namatek_front:latest
