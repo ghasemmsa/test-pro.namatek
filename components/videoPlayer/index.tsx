@@ -1,7 +1,7 @@
 // components/videoPlayer/VideoJS.tsx
 import { useLogMutation } from 'libs/redux/services/karnama'
 import { RootState } from 'libs/redux/store'
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+import React, { useEffect, useRef, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 
 import '@vidstack/react/player/styles/default/theme.css'
@@ -54,27 +54,21 @@ export default function VideoJS(props: Props) {
   const [sendLog] = useLogMutation()
 
   // ---------- protections ----------
-  // queue for sending logs (prevents burst/double sends)
   const logQueue = useRef<string[]>([])
-  // prevent multiple intervals
   const intervalRef = useRef<number | null>(null)
-  // last timeline (player.current.currentTime) seen
   const lastTimelineRef = useRef<number>(0)
-  // accumulated timeline progress (seconds of timeline progressed not wall-time)
   const timelineAccRef = useRef<number>(0)
-  // last time (player time) we sent a log (to avoid duplicates)
   const lastSentTimeRef = useRef<number | null>(null)
-  // last paused state to avoid duplicate Play/Pause logs
   const lastPausedStateRef = useRef<boolean | undefined>(undefined)
-  // when component mounted (for debugging if needed)
   const mountedRef = useRef(false)
+  const currentLessonRef = useRef<number | null>(null) // ← نگهداری lesson فعلی
 
   // ---------- helper: enqueue log ----------
   const enqueueLog = useCallback((action: string) => {
     logQueue.current.push(action)
   }, [])
 
-  // ---------- flush logs (one by one) ----------
+  // ---------- flush logs ----------
   const flushLogs = useCallback(() => {
     if (!accessToken || !player.current) return
     if (logQueue.current.length === 0) return
@@ -82,12 +76,9 @@ export default function VideoJS(props: Props) {
     const action = logQueue.current.shift()
     if (!action) return
 
-    // protect: avoid sending duplicate time for same action/time
     const nowTime = Math.floor(player.current.currentTime)
-    if (lastSentTimeRef.current === nowTime && action === 'Playing') {
-      // skip duplicate Playing at same player time
-      return
-    }
+    if (lastSentTimeRef.current === nowTime && action === 'Playing') return
+
     lastSentTimeRef.current = nowTime
 
     void sendLog({
@@ -100,13 +91,12 @@ export default function VideoJS(props: Props) {
     })
   }, [accessToken, id, sendLog])
 
-  // flush loop — runs independently, small interval
   useEffect(() => {
-    if (intervalRef.current != null) return // already set
-    // use window.setInterval to get numeric id
+    if (intervalRef.current != null) return
     intervalRef.current = window.setInterval(() => {
       flushLogs()
     }, 300) as unknown as number
+
     return () => {
       if (intervalRef.current != null) {
         clearInterval(intervalRef.current)
@@ -115,7 +105,7 @@ export default function VideoJS(props: Props) {
     }
   }, [flushLogs])
 
-  // ---------- Play/Pause handling (debounced via lastPausedStateRef) ----------
+  // ---------- Play/Pause ----------
   useEffect(() => {
     if (paused === lastPausedStateRef.current) return
     lastPausedStateRef.current = paused
@@ -123,12 +113,12 @@ export default function VideoJS(props: Props) {
     if (setShowNewUGQ) setShowNewUGQ(Boolean(paused))
   }, [paused, enqueueLog, setShowNewUGQ])
 
-  // ---------- End handling ----------
+  // ---------- End ----------
   useEffect(() => {
     if (ended) enqueueLog('End')
   }, [ended, enqueueLog])
 
-  // ---------- protect against multiple mounts (debug) ----------
+  // ---------- Mount protection ----------
   useEffect(() => {
     mountedRef.current = true
     return () => {
@@ -136,20 +126,13 @@ export default function VideoJS(props: Props) {
     }
   }, [])
 
-  // ---------- core tick: measure timeline progress (delta = now - lastTimeline) ----------
-  // logic:
-  //  - read current player.currentTime
-  //  - delta = now - lastTimeline
-  //  - if delta <=0 => likely seek back; set lastTimeline = now; do not add negative delta
-  //  - if delta > 5 (big jump) => likely tab freeze or huge skip; treat as seek or skip; set lastTimeline = now
-  //  - otherwise add delta to timelineAccRef
-  //  - if timelineAccRef >= 60 => enqueue Playing and subtract 60 (keep remainder)
+  // ---------- tick ----------
   const tick = useCallback(() => {
     const pl = player.current
     if (!pl) return
+
     if (paused) {
-      // update lastTimelineRef to currentTime so when resume we delta from correct position
-      lastTimelineRef.current = pl.currentTime ?? pl.currentTime ?? 0
+      lastTimelineRef.current = pl.currentTime ?? 0
       return
     }
 
@@ -157,46 +140,30 @@ export default function VideoJS(props: Props) {
     const last = lastTimelineRef.current ?? 0
     let delta = now - last
 
-    // first-run: initialize
+    // initialize
     if (last === 0 && now > 0) {
       lastTimelineRef.current = now
       return
     }
 
-    // negative delta => user seeked backward: reset baseline
-    if (delta <= 0) {
+    // ignore negative delta یا delta خیلی بزرگ در همان lesson
+    if (delta <= 0 || delta > 5) {
       lastTimelineRef.current = now
-      timelineAccRef.current = 0
       return
     }
 
-    // huge delta => likely tab freeze, network lag, or a big seek forward: treat as seek (do not count huge delta)
-    // threshold: 5s (tuneable)
-    if (delta > 5) {
-      lastTimelineRef.current = now
-      timelineAccRef.current = 0
-      return
-    }
-
-    // normal small positive delta -> add to acc
+    // accumulate
     timelineAccRef.current += delta
 
-    // while >= 60, enqueue playing and subtract 60 (handle multiple minutes in one tick)
     while (timelineAccRef.current >= 60) {
-      // protect duplicate same-time playing logs
-      // determine what time we'll report: use Math.floor(now) at the moment of enqueue
-      // but rely on flush logic to dedupe exact time duplicates
       enqueueLog('Playing')
       timelineAccRef.current -= 60
     }
 
     lastTimelineRef.current = now
-
-    // callback for parent
     onTimeChange && onTimeChange(now)
   }, [paused, enqueueLog, onTimeChange])
 
-  // make sure only one interval for tick is created
   const tickIntervalRef = useRef<number | null>(null)
   useEffect(() => {
     if (tickIntervalRef.current != null) return
@@ -212,29 +179,39 @@ export default function VideoJS(props: Props) {
     }
   }, [tick])
 
-  // ---------- respond to external seek/setCurrentTime requests ----------
+  // ---------- lesson change ----------
+  useEffect(() => {
+    if (!id) return
+    if (id !== currentLessonRef.current) {
+      // lesson جدید: ریست accumulator
+      currentLessonRef.current = id
+      timelineAccRef.current = 0
+      lastTimelineRef.current = player.current?.currentTime ?? 0
+    }
+  }, [id])
+
+  // ---------- external seek ----------
   useEffect(() => {
     if (typeof changeCurrentTime === 'number' && changeCurrentTime >= 0 && player.current) {
       player.current.currentTime = changeCurrentTime
-      // reset changeCurrentTime signal
       setChangeCurrentTime && setChangeCurrentTime(-1)
-      // reset baselines so next tick computes deltas correctly
       lastTimelineRef.current = player.current.currentTime ?? 0
-      timelineAccRef.current = 0
+      // در seek داخلی accumulator حفظ می‌شود
     }
   }, [changeCurrentTime, setChangeCurrentTime])
 
-  // ---------- loadedmetadata: initialize baseline ----------
+  // ---------- loadedmetadata ----------
   function onLoadedMetadata(e: MediaLoadedMetadataEvent) {
     if (!player.current) return
     if (typeof timeOfVideo === 'number' && !Number.isNaN(timeOfVideo) && timeOfVideo > 0 && timeOfVideo < (player.current.duration ?? Infinity) - 1) {
       player.current.currentTime = timeOfVideo
     }
     lastTimelineRef.current = player.current.currentTime ?? 0
+    // accumulator فقط وقتی lesson جدید load می‌شود ریست می‌شود
   }
 
   // ---------- HLS provider ----------
-  const HLS_URL = 'https://proback.namatek.com/js/hls.min.js' // or CDN fallback
+  const HLS_URL = 'https://proback.namatek.com/js/hls.min.js'
   function onProviderChange(provider: MediaProviderAdapter | null, _evt: MediaProviderChangeEvent) {
     if (isHLSProvider(provider)) provider.library = HLS_URL
   }
