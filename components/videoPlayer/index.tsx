@@ -218,6 +218,7 @@ export default function VideoJS(props: Props) {
       setChangeCurrentTime && setChangeCurrentTime(-1)
       // reset baselines so next tick computes deltas correctly
       lastTimelineRef.current = player.current.currentTime ?? 0
+      timelineAccRef.current = 0
     }
   }, [changeCurrentTime, setChangeCurrentTime])
 
