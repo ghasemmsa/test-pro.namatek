@@ -166,6 +166,7 @@ export default function VideoJS(props: Props) {
     // negative delta => user seeked backward: reset baseline
     if (delta <= 0) {
       lastTimelineRef.current = now
+      timelineAccRef.current = 0
       return
     }
 
@@ -173,6 +174,7 @@ export default function VideoJS(props: Props) {
     // threshold: 5s (tuneable)
     if (delta > 5) {
       lastTimelineRef.current = now
+      timelineAccRef.current = 0
       return
     }
 
