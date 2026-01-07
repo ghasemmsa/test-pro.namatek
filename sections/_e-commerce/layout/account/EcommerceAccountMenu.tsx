@@ -84,6 +84,12 @@ export const companyNavigations = [
     icon: <Iconify icon='mdi:format-list-group' />,
   },
   {
+    title: 'درخواست دوره',
+    path: '/dashboard/c/course-request/',
+    apath: 'CourseRequest',
+    icon: <Iconify icon='mdi:clipboard-text-outline' />,
+  },
+  {
     title: 'بروزرسانی ها',
     path: '/dashboard/c/updates/',
     apath: `VersionHistory`,
