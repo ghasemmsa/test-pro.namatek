@@ -111,6 +111,17 @@ export const ConfirmOtp = ({ changeMode, data, setStep }: IConfirmOtpProps) => {
       >
         {Number(data) ? 'اصلاح شماره موبایل' : 'اصلاح ایمیل'}
       </Button>
+	  
+	  
+	  <input
+		  type="text"
+		  autoComplete="one-time-code"
+		  value={code}
+		  onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
+		  style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
+		/>
+	  
+	  
 
       <Row
         className={cn(
@@ -120,11 +131,23 @@ export const ConfirmOtp = ({ changeMode, data, setStep }: IConfirmOtpProps) => {
         direction='row-reverse'
         justify='space-between'
       >
-        <CodeInput
+        {/* <CodeInput
           length={4}
           getValue={handleInputs}
           onChange={(e) => setCode(e)}
-        />
+        /> */}
+		
+		<CodeInput
+			length={4}
+			getValue={(val) => {
+			  setCode(val);       // hidden input آپدیت می‌شود
+			  handleInputs(val);  // OTP ارسال می‌شود
+			}}
+			onChange={(val) => setCode(val)} // همگام‌سازی با hidden input
+			externalValue={code} // ← مهم: حالا ۴ باکس از hidden input پر می‌شوند
+		  />
+		
+		
       </Row>
       {apiError && (
         <span className={styles['confirmOtp--error']}>{apiError?.message}</span>
