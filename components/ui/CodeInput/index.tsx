@@ -10,8 +10,7 @@ const CodeInput = ({
   getValue,
   onChange,
   disabled = false,
-  externalValue, // ← اضافه شد
-  }: CodeInputProps & { externalValue?: string }) => {
+}: CodeInputProps) => {
   const loopThrough = Array(length).fill(0)
   const initialValues = Object.assign(
     {},
@@ -33,16 +32,6 @@ const CodeInput = ({
     if (returnedValue.length === length) getValue(returnedValue)
     if (onChange) onChange(returnedValue)
   }, [values, length])
-  
-  useEffect(() => {
-  if (externalValue) {
-    const newValues = { ...values };
-    for (let i = 0; i < length; i++) {
-      newValues[`code-${i + 1}`] = externalValue[i] || '';
-    }
-    setValues(newValues);
-  }
-  }, [externalValue]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>, index: number) => {
     const { target } = e
@@ -74,7 +63,8 @@ const CodeInput = ({
     <>
       {loopThrough.map((_, index) => (
         <input
-          autoComplete='off'
+          /* autoComplete='off' */
+		  /* type='number' */
           /* eslint-disable */
           autoFocus={!index}
           className={styles['codeInput']}
@@ -85,7 +75,10 @@ const CodeInput = ({
           disabled={disabled}
           /* eslint-disable */
           key={index}
-          type='number'
+          
+		  type="text"
+          inputMode="numeric"
+          autoComplete="one-time-code"
         />
       ))}
     </>
