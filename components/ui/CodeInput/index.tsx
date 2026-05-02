@@ -63,7 +63,7 @@ const CodeInput = ({
     <>
       {loopThrough.map((_, index) => (
         <input
-          /* autoComplete='off' */
+          autoComplete='off'
 		  /* type='number' */
           /* eslint-disable */
           autoFocus={!index}
